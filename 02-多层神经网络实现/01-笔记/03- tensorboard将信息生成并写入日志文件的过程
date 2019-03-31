@@ -1,0 +1,15 @@
+# tensorboard可以显示的数据和类型
+    - 标量:tf.summary.scalar()
+    - 图像：tf.summary.image()
+    - 音频：tf.summary.audio()
+    - 图表-直方图：tf.summary.histogram()
+# 所有的summary定义好之后，要合并起来，形成一个merge_summary_op
+    - merge_summary_op = tf.summary.merge_all()
+# 合并以后的summary相关操作通过Session运行，形成一个summary_str
+    - summary_str = Session.run(merge_summary_op)
+# summary_str通过filewriter写入到Events文件
+    - tf.summary.FileWriter.add_summary(summary_str)
+
+# 此外，session的计算图，也可以通过filewrite写入Events文件
+    - Session.get_default_graph()或session.graph
+      tf.summary.FileWrite(logdir, session.graph)

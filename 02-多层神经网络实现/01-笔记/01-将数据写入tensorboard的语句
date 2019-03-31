@@ -1,0 +1,41 @@
+
+# 显示输入样本的图像
+    - 构建输入层
+    x = tf.placeholder(tf.float32, [None, 784], name="X")
+
+    - 将输入样本的图像加入到summary
+    image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
+    # 参数需要四维：后面三维表示图像的长、宽和颜色的通道数（28,28,1），通道数为1表示单通道(单色)；第一个参数表示一次进来多少行、多少个数据，-1表示暂时不确定，会根据进来的数据总数计算是多少行
+    tf.summary.image('input', image_shaped_input, 10)   # 最后一个参数10，表示最多显示10张图片
+
+# 前向输出值以直方图表示: 定义前向计算forward后，通过下面语句加入summary
+    - tf.summary.histogram('forward', forward)
+
+# 将loss值以标量的形式表示：定义loss_func操作后，可以通过下面语句加入summary
+    - tf.summary.scalar("loss", loss_func)
+
+# 将准确率以标量的形式显示：定义accuracy之后，可以通过下面语句加入summary
+    - tf.summary.scalar("accuracy", accuracy)
+
+# 训练模型的开始，需要将前面定义的所有summary操作进行合并，写入计算图
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+
+    - 合并前面定义的所有summary
+    merged_summary_op = tf.summary.merge_all()
+    - 创建写入符，把计算图写入
+    writer = tf.summary.FileWriter("log/", sess.graph)
+
+# 在迭代过程中，生成每次要写入的summary信息，加入summary
+    for epoch in range(train_epochs):
+        for batch in range(total_batch):
+            xs, ys = mnist.train.next_batch(batch_size) # 读取批次数据
+            sess.run(optimizer, feed_dict={x: xs, y: ys})  # 执行批次训练
+
+            - 生成summary
+            summary_str = sess.run(merged_summary_op, feed_dict={x:xs, y:ys})
+            - 将summary写入tensorboard的Events文件
+            writer.add_summary(summary_str, epoch)
+
+        loss, acc = sess.run([loss_func, accuracy], feed_dict={x: mnist.validation.images, y: mnist.validation.labels})
+
